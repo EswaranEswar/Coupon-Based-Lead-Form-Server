@@ -15,7 +15,6 @@ async function bootstrap() {
     origin: DEFAULT_CORS_ORIGIN,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.useGlobalPipes(
@@ -35,7 +34,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = Number(process.env.PORT) || DEFAULT_PORT;
-  await app.listen(port);
+  await app.listen(port || 4000, '0.0.0.0');
   console.log(`API running on http://localhost:${port}/`);
   console.log(`Swagger Docs available on http://localhost:${port}/api/docs`);
 }
