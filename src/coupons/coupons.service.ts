@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, forwardRef } from '@nestjs/common';
 import { CouponsRepository } from './coupons.repository';
+import { LeadsRepository } from '../leads/leads.repository';
 import { ValidateCouponDto } from '../shared/zod/coupon.schema';
 import { MESSAGES } from '../shared/constants/constants';
 import { MongoCoupon } from '../shared/mongoose/coupon.schema';
@@ -10,6 +11,8 @@ export class CouponsService {
     constructor(
         private readonly couponsRepository:
             CouponsRepository,
+        @Inject(forwardRef(() => LeadsRepository))
+        private readonly leadsRepository: LeadsRepository,
     ) { }
 
     async validateCoupon(
@@ -69,6 +72,16 @@ export class CouponsService {
             throw new BadRequestException(
                 MESSAGES.COUPON.NOT_APPLICABLE,
             );
+        }
+
+        // First-time user only
+        if (coupon.isFirstTimeOnly) {
+            const existingLead = await this.leadsRepository.findLeadByEmail(payload.email);
+            if (existingLead) {
+                throw new BadRequestException(
+                    'This coupon is only for new users',
+                );
+            }
         }
 
         return coupon;

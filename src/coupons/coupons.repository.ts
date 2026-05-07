@@ -19,7 +19,7 @@ export class CouponsRepository {
     return this.couponModel.findOneAndUpdate(
       { code },
       { $inc: { usedCount: 1 } },
-      { new: true }
+      { returnDocument: 'after' }
     );
   }
 
