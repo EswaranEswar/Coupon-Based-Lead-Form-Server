@@ -4,13 +4,15 @@ import {
 } from '@nestjs/common';
 import { LeadsRepository } from '../leads/leads.repository';
 import { LeadType } from '../shared/zod/lead.schema';
+import { CouponsService } from '../coupons/coupons.service';
 
 @Injectable()
 export class LeadsService {
 
   constructor(
     private readonly leadsRepository: LeadsRepository,
-  ) {}
+    private readonly couponsService: CouponsService,
+  ) { }
 
   async createLead(
     leadModel: LeadType,
@@ -30,27 +32,23 @@ export class LeadsService {
     }
 
     let discountAmount = 0;
+    let finalPrice = leadModel.budgetRange;
 
-    let finalPrice =
-      leadModel.budgetRange;
+    if (leadModel.couponCode) {
+      // Dynamically validate the coupon
+      const coupon = await this.couponsService.validateCoupon({
+        couponCode: leadModel.couponCode,
+        requirementType: leadModel.requirementType,
+        budgetRange: leadModel.budgetRange,
+      });
 
-    if (
-      leadModel.couponCode === 'SAVE10'
-    ) {
+      const discountData = this.couponsService.calculateCouponDiscount(
+        leadModel.budgetRange,
+        coupon,
+      );
 
-      // Minimum budget check
-      if (leadModel.budgetRange < 500) {
-        throw new BadRequestException(
-          'Minimum ₹500 required',
-        );
-      }
-
-      discountAmount =
-        leadModel.budgetRange * 0.1;
-
-      finalPrice =
-        leadModel.budgetRange -
-        discountAmount;
+      discountAmount = discountData.discountAmount;
+      finalPrice = discountData.finalPrice;
     }
 
     // Save lead
@@ -61,6 +59,11 @@ export class LeadsService {
         finalPrice,
       });
 
+    // If a coupon was successfully applied, increment its usage limit
+    if (leadModel.couponCode) {
+      await this.couponsService.applyCoupon(leadModel.couponCode.toUpperCase());
+    }
+
     return {
       success: true,
       message: 'Lead submitted successfully',
@@ -69,9 +72,7 @@ export class LeadsService {
   }
 
   async getAllLeads() {
-
     const leads = await this.leadsRepository.getAllLeads();
-
     return {
       success: true,
       data: leads,

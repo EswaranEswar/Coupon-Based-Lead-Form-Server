@@ -1,16 +1,6 @@
 import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
-
-export const CouponTypeEnum = [
-  'PERCENT',
-  'FLAT',
-] as const;
-
-export const RequirementTypeEnum = [
-  'Service',
-  'Product',
-  'Consultation',
-] as const;
+import { COUPON_TYPES, REQUIREMENT_TYPES } from '../constants/constants';
 
 // CreateCouponSchema 
 export const CreateCouponSchema = z.object({
@@ -22,36 +12,36 @@ export const CreateCouponSchema = z.object({
       value.toUpperCase(),
     ),
 
-  type: z.enum(CouponTypeEnum),
+  type: z.enum(COUPON_TYPES),
 
-  discountValue: z
+  value: z
     .number({
-      error: 'Discount value must be a number',
+      error: 'Value must be a number',
     })
     .positive(
-      'Discount value must be greater than 0',
+      'Value must be greater than 0',
     ),
 
-  minAmount: z
+  minOrderValue: z
     .number()
-    .positive()
-    .nullable()
-    .optional(),
+    .min(0)
+    .optional()
+    .default(0),
 
-  applicableRequirementTypes: z
+  applicableOn: z
     .array(
-      z.enum(RequirementTypeEnum),
+      z.enum(REQUIREMENT_TYPES),
     )
     .optional()
     .default([]),
 
-  maxUses: z
+  usageLimit: z
     .number()
     .int()
     .positive()
     .default(100),
 
-  currentUses: z
+  usedCount: z
     .number()
     .int()
     .min(0)
@@ -81,7 +71,7 @@ export const ValidateCouponSchema =
       ),
 
     requirementType: z.enum(
-      RequirementTypeEnum,
+      REQUIREMENT_TYPES,
     ),
 
     budgetRange: z.preprocess(
@@ -95,12 +85,11 @@ export const ValidateCouponSchema =
     ),
   });
 
-export class CreateCouponDto
-  extends createZodDto(
-    CreateCouponSchema,
-  ) {}
 
-export class ValidateCouponDto
-  extends createZodDto(
-    ValidateCouponSchema,
-  ) {}
+export type CreateCouponInput = z.infer<typeof CreateCouponSchema>;
+
+export type ValidateCouponInput = z.infer<typeof ValidateCouponSchema>;
+
+export class CreateCouponDto extends createZodDto(CreateCouponSchema) { }
+
+export class ValidateCouponDto extends createZodDto(ValidateCouponSchema) { }

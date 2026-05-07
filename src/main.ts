@@ -1,16 +1,19 @@
 import { NestFactory } from '@nestjs/core';
-
+import * as dns from 'node:dns';
 import { AppModule } from './app.module';
 
 import { ZodValidationPipe } from 'nestjs-zod';
 
+import { DEFAULT_CORS_ORIGIN, DEFAULT_PORT } from './shared/constants/constants';
+
 async function bootstrap() {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
 
   const app =
     await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: DEFAULT_CORS_ORIGIN,
     credentials: true,
   });
 
@@ -18,7 +21,7 @@ async function bootstrap() {
     new ZodValidationPipe(),
   );
 
- const port = Number(process.env.PORT) || 3000;
+ const port = Number(process.env.PORT) || DEFAULT_PORT;
   await app.listen(port);
   console.log(`API running on http://localhost:${port}/`);
 }

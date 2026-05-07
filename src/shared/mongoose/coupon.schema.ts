@@ -2,11 +2,7 @@ import {
   Schema,
   Document,
 } from 'mongoose';
-
-export const CouponTypeEnum = [
-  'PERCENT',
-  'FLAT',
-] as const;
+import { COUPON_TYPES } from '../constants/constants';
 
 export const MongoCouponSchema =
   new Schema(
@@ -20,7 +16,7 @@ export const MongoCouponSchema =
 
       type: {
         type: String,
-        enum: CouponTypeEnum,
+        enum: COUPON_TYPES,
         required: true,
       },
 
@@ -68,7 +64,7 @@ export const MongoCouponSchema =
 export interface MongoCoupon extends Document {
   code: string;
   type:
-    (typeof CouponTypeEnum)[number];
+    (typeof COUPON_TYPES)[number];
   value: number;
   minOrderValue: number;
   applicableOn: string[];

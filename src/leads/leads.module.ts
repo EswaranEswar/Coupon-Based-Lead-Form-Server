@@ -4,15 +4,18 @@ import { MongoLeadSchema } from '../shared/mongoose/lead.schema';
 import { LeadsController } from './leads.controller';
 import { LeadsService } from './leads.service';
 import { LeadsRepository } from './leads.repository';
+import { CouponsModule } from '../coupons/coupons.module';
+import { DATABASE_COLLECTIONS } from '../shared/constants/constants';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
-        name: 'leads',
+        name: DATABASE_COLLECTIONS.LEADS,
         schema: MongoLeadSchema,
       },
     ]),
+    CouponsModule,
   ],
 
   controllers: [LeadsController],
@@ -27,4 +30,4 @@ import { LeadsRepository } from './leads.repository';
     LeadsRepository,
   ],
 })
-export class LeadModule {}
+export class LeadModule { }

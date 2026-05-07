@@ -1,43 +1,31 @@
 import { Schema, Document } from 'mongoose';
-
-export const MongoRequirementTypeEnum = [
-  'Service',
-  'Product',
-  'Consultation',
-] as const;
+import { REQUIREMENT_TYPES } from '../constants/constants';
 
 export const MongoLeadSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true,
     },
 
     phone: {
       type: String,
       required: true,
-      trim: true,
-      index: true,
     },
 
     email: {
       type: String,
       required: true,
-      trim: true,
-      lowercase: true,
-      index: true,
     },
 
     city: {
       type: String,
       required: true,
-      trim: true,
     },
 
     requirementType: {
       type: String,
-      enum: MongoRequirementTypeEnum,
+      enum: REQUIREMENT_TYPES,
       required: true,
     },
 
@@ -49,13 +37,11 @@ export const MongoLeadSchema = new Schema(
     message: {
       type: String,
       default: null,
-      trim: true,
     },
 
     couponCode: {
       type: String,
       default: null,
-      trim: true,
     },
 
     discountAmount: {
@@ -71,25 +57,20 @@ export const MongoLeadSchema = new Schema(
   {
     timestamps: true,
   },
-);
+).index({ createdAt: -1 });
 
 export interface MongoLead extends Document {
   name: string;
   phone: string;
   email: string;
-
   city: string;
-
   requirementType:
-    (typeof MongoRequirementTypeEnum)[number];
-
+  (typeof REQUIREMENT_TYPES)[number];
   budgetRange: number;
-
   message?: string | null;
-
   couponCode?: string | null;
-
   discountAmount: number;
-
   finalPrice: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
